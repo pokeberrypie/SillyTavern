@@ -3,22 +3,27 @@
     "api_server": "http://localhost:5000/api",
     "api_server_textgenerationwebui": "http://127.0.0.1:7860",
     "preset_settings": "Classic-Pygmalion-6b",
-    "user_avatar": "1686545813559.png",
+    "user_avatar": "1688207092269.png",
     "amount_gen": 180,
     "max_context": 3630,
     "main_api": "poe",
-    "world_info": null,
+    "world_info": {
+        "globalSelect": []
+    },
     "world_info_depth": 2,
-    "world_info_budget": 200,
+    "world_info_budget": 25,
     "world_info_recursive": false,
     "world_info_case_sensitive": false,
     "world_info_match_whole_words": false,
+    "world_info_character_strategy": 1,
     "textgenerationwebui_settings": {
         "temp": 0.5,
         "top_p": 0.9,
         "top_k": 0,
         "top_a": 0,
         "tfs": 1,
+        "epsilon_cutoff": 0,
+        "eta_cutoff": 0,
         "typical_p": 1,
         "rep_pen": 1.1,
         "no_repeat_ngram_size": 0,
@@ -65,10 +70,13 @@
         "multigen_first_chunk": 50,
         "multigen_next_chunks": 30,
         "custom_chat_separator": "",
-        "fast_ui_mode": true,
+        "markdown_escape_strings": "",
+        "fast_ui_mode": false,
         "avatar_style": 1,
-        "chat_display": 0,
-        "sheld_width": 0,
+        "chat_display": 1,
+        "sheld_width": 1,
+        "never_resize_avatars": false,
+        "show_card_avatar_urls": false,
         "play_message_sound": false,
         "play_sound_unfocused": true,
         "auto_save_msg_edits": false,
@@ -81,12 +89,14 @@
         "main_text_color": "rgba(220, 220, 210, 1)",
         "italics_text_color": "rgba(175, 175, 175, 1)",
         "quote_text_color": "rgba(220, 220, 210, 1)",
-        "fastui_bg_color": "rgba(0, 0, 0, 0.9)",
         "blur_tint_color": "rgba(0, 0, 0, 0.5)",
+        "user_mes_blur_tint_color": "rgba(0, 0, 0, 0.3)",
+        "bot_mes_blur_tint_color": "rgba(60, 60, 60, 0.3)",
         "shadow_color": "rgba(0, 0, 0, 0.5)",
         "waifuMode": false,
         "movingUI": false,
-        "noShadows": false,
+        "movingUIState": {},
+        "noShadows": true,
         "theme": "Default (Dark)",
         "auto_swipe": false,
         "auto_swipe_minimum_length": 0,
@@ -101,6 +111,7 @@
         "allow_name2_display": false,
         "hotswap_enabled": true,
         "timer_enabled": true,
+        "timestamps_enabled": true,
         "max_context_unlocked": true,
         "prefer_character_prompt": true,
         "prefer_character_jailbreak": true,
@@ -122,7 +133,28 @@
             "1685326204894.png": "Morrigan Sayre",
             "1683961366533.png": "Wren Starr"
         },
-        "default_persona": null
+        "default_persona": null,
+        "persona_descriptions": {
+            "1683961366533.png": {
+                "description": "",
+                "position": 0
+            },
+            "1684736888548.png": {
+                "description": "",
+                "position": 0
+            },
+            "1685326204894.png": {
+                "description": "",
+                "position": 0
+            },
+            "1686545813559.png": {
+                "description": "",
+                "position": 0
+            }
+        },
+        "persona_description": "",
+        "persona_description_position": 0,
+        "fastui_bg_color": "rgba(0, 0, 0, 0.9)"
     },
     "poe_settings": {
         "bot": "gagrano",
@@ -142,7 +174,39 @@
         "autoConnect": false,
         "disabledExtensions": [],
         "expressionOverrides": [],
-        "memory": {},
+        "memory": {
+            "minLongMemory": 16,
+            "maxLongMemory": 1024,
+            "longMemoryLength": 128,
+            "shortMemoryLength": 512,
+            "minShortMemory": 128,
+            "maxShortMemory": 1024,
+            "shortMemoryStep": 16,
+            "longMemoryStep": 8,
+            "repetitionPenaltyStep": 0.05,
+            "repetitionPenalty": 1.2,
+            "maxRepetitionPenalty": 2,
+            "minRepetitionPenalty": 1,
+            "temperature": 1,
+            "minTemperature": 0.1,
+            "maxTemperature": 2,
+            "temperatureStep": 0.05,
+            "lengthPenalty": 1,
+            "minLengthPenalty": -4,
+            "maxLengthPenalty": 4,
+            "lengthPenaltyStep": 0.1,
+            "memoryFrozen": false,
+            "source": "extras",
+            "prompt": "[Pause your roleplay. Summarize the most important facts and events that have happened in the chat so far. If a summary already exists in your memory, use that as a base and expand with new facts. Limit the summary to {{words}} words or less. Your response should include nothing but the summary.]",
+            "promptWords": 200,
+            "promptMinWords": 25,
+            "promptMaxWords": 1000,
+            "promptWordsStep": 25,
+            "promptInterval": 10,
+            "promptMinInterval": 1,
+            "promptMaxInterval": 100,
+            "promptIntervalStep": 1
+        },
         "note": {
             "default": "When prompted to reply with just a full stop, take some time before answering.",
             "chara": [
@@ -271,7 +335,13 @@
         "1685771829016": [],
         "1686217121327": [],
         "1686549615218": [],
-        "1686991859159": []
+        "1686991859159": [],
+        "Draco Malfoy2.png": [],
+        "Madame Pomfrey.png": [],
+        "Morrigan Sayre.png": [],
+        "Seraphine Rosier.png": [],
+        "1687624070083": [],
+        "1687830885967": []
     },
     "temp_novel": 1.11,
     "rep_pen_novel": 1.11,
@@ -291,6 +361,15 @@
     "single_line": false,
     "use_stop_sequence": false,
     "streaming_kobold": true,
+    "sampler_order": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+    ],
     "temp_openai": "0.9",
     "freq_pen_openai": 0.7,
     "pres_pen_openai": 0.7,
@@ -339,5 +418,6 @@
     "reverse_proxy": "",
     "legacy_streaming": false,
     "chat_completion_source": "openai",
-    "max_context_unlocked": true
+    "max_context_unlocked": true,
+    "use_openrouter": false
 }
