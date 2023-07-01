@@ -1990,7 +1990,7 @@ async function Generate(type, { automatic_trigger, force_name2, resolve, reject,
 
         deactivateSendButtons();
 
-        let { messageBias, promptBias } = getBiasStrings(textareaText);
+        let { messageBias, promptBias } = getBiasStrings(textareaText, type);
 
         //*********************************
         //PRE FORMATING STRING
@@ -2126,8 +2126,8 @@ async function Generate(type, { automatic_trigger, force_name2, resolve, reject,
 
         // Moved here to not overflow the Poe context with added prompt bits
         if (main_api == 'poe') {
-            allAnchors = appendPoeAnchors(type, allAnchors);
-            zeroDepthAnchor = appendPoeAnchors(type, zeroDepthAnchor);
+            allAnchors = appendPoeAnchors(type, allAnchors, jailbreakPrompt);
+            zeroDepthAnchor = appendPoeAnchors(type, zeroDepthAnchor, jailbreakPrompt);
         }
 
         // hack for regeneration of the first message
@@ -2699,17 +2699,23 @@ function getNextMessageId(type) {
     return type == 'swipe' ? Number(count_view_mes - 1) : Number(count_view_mes);
 }
 
-export function getBiasStrings(textareaText) {
+export function getBiasStrings(textareaText, type) {
     let promptBias = '';
     let messageBias = extractMessageBias(textareaText);
 
-    // gets bias of the latest message where it was applied
-    for (let mes of chat.slice().reverse()) {
-        if (mes && mes.extra && (mes.is_user || mes.is_system || mes.extra.type === system_message_types.NARRATOR)) {
-            if (mes.extra.bias && mes.extra.bias.trim().length > 0) {
-                promptBias = mes.extra.bias;
+    // If user input is not provided, retrieve the bias of the most recent relevant message
+    if (!textareaText) {
+        for (let i = chat.length - 1; i >= 0; i--) {
+            const mes = chat[i];
+            if (type === 'swipe' && chat.length - 1 === i) {
+                continue;
             }
-            break;
+            if (mes && (mes.is_user || mes.is_system || mes.extra?.type === system_message_types.NARRATOR)) {
+                if (mes.extra?.bias?.trim()?.length > 0) {
+                    promptBias = mes.extra.bias;
+                }
+                break;
+            }
         }
     }
 
@@ -2769,20 +2775,16 @@ function getMaxContextSize() {
         this_max_context = (max_context - amount_gen);
     }
     if (main_api == 'novel') {
-        if (novel_tier === 1) {
-            this_max_context = 1024;
-        } else {
-            this_max_context = Number(max_context);
-            if (nai_settings.model_novel == 'krake-v2') {
-                // Krake has a max context of 2048
-                // Should be used with nerdstash tokenizer for best results
-                this_max_context = Math.min(max_context, 2048);
-            }
-            if (nai_settings.model_novel == 'clio-v1') {
-                // Clio has a max context of 8192
-                // Should be used with nerdstash_v2 tokenizer for best results
-                this_max_context = Math.min(max_context, 8192);
-            }
+        this_max_context = Number(max_context);
+        if (nai_settings.model_novel == 'krake-v2' || nai_settings.model_novel == 'euterpe-v2') {
+            // Krake and Euterpe have a max context of 2048
+            // Should be used with nerdstash tokenizer for best results
+            this_max_context = Math.min(max_context, 2048);
+        }
+        if (nai_settings.model_novel == 'clio-v1') {
+            // Clio has a max context of 8192
+            // Should be used with nerdstash_v2 tokenizer for best results
+            this_max_context = Math.min(max_context, 8192);
         }
     }
     if (main_api == 'openai') {
@@ -5590,6 +5592,15 @@ function openCharacterWorldPopup() {
     const worldId = (menu_type == 'create' ? create_save.world : characters[chid]?.data?.extensions?.world) || '';
     template.find('.character_name').text(name);
 
+    // Not needed on mobile
+    if (deviceInfo && deviceInfo.device.type === 'desktop') {
+        $(extraSelect).select2({
+            width: '100%',
+            placeholder: 'No auxillary Lorebooks set. Click here to select.',
+            allowClear: true,
+            closeOnSelect: false,
+        });
+    }
 
     // Apped to base dropdown
     world_names.forEach((item, i) => {
@@ -5626,7 +5637,7 @@ function openCharacterWorldPopup() {
             return;
         }
 
-        let selectScrollTop = null;
+        /*let selectScrollTop = null;
 
         if (deviceInfo && deviceInfo.device.type === 'desktop') {
             e.preventDefault();
@@ -5636,7 +5647,7 @@ function openCharacterWorldPopup() {
             option.prop('selected', !option.prop('selected'));
             await delay(1);
             selectElement.scrollTop = selectScrollTop;
-        }
+        }*/
 
         onExtraWorldInfoChanged();
     });
@@ -7175,6 +7186,7 @@ $(document).ready(function () {
             $("#amount_gen_block").find('input').prop("disabled", false);
 
             $("#amount_gen_block").css("opacity", 1.0);
+            $("#kobold_order").sortable("enable");
         } else {
             //$('.button').disableSelection();
             preset_settings = "gui";
@@ -7186,6 +7198,7 @@ $(document).ready(function () {
             $("#amount_gen_block").find('input').prop("disabled", true);
 
             $("#amount_gen_block").css("opacity", 0.45);
+            $("#kobold_order").sortable("disable");
         }
         saveSettingsDebounced();
     });
@@ -7831,13 +7844,13 @@ $(document).ready(function () {
 
     $(document).on('click', '.mes .avatar', function () {
 
-        console.log(isMobile());
-        console.log($('body').hasClass('waifuMode'));
+        //console.log(isMobile());
+        //console.log($('body').hasClass('waifuMode'));
 
-        if (isMobile() === true && !$('body').hasClass('waifuMode')) {
+        /* if (isMobile() === true && !$('body').hasClass('waifuMode')) {
             console.debug('saw mobile regular mode, returning');
             return;
-        } else { console.debug('saw valid env for zoomed display') }
+        } else { console.debug('saw valid env for zoomed display') } */
 
         let thumbURL = $(this).children('img').attr('src');
         let charsPath = '/characters/'
@@ -8004,7 +8017,7 @@ $(document).ready(function () {
         const html = `<h3>Enter the URL of the content to import</h3>
         Supported sources:<br>
         <ul class="justifyLeft">
-            <li>Chub characters (direct link or id)<br>Example: <tt></tt>Anonymous/example-character</li>
+            <li>Chub characters (direct link or id)<br>Example: <tt>Anonymous/example-character</tt></li>
             <li>Chub lorebooks (direct link or id)<br>Example: <tt>lorebooks/bartleby/example-lorebook</tt></li>
             <li>More coming soon...</li>
         <ul>`
